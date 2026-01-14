@@ -13,7 +13,7 @@
         :root { --whatsapp-green: #25D366; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
-        body { background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
+        body { background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
 
         .feed-container {
             height: 100vh;
@@ -34,7 +34,6 @@
             background: #111;
         }
 
-        /* Top 85% - Template Area */
         .template-area {
             position: relative;
             width: 100%;
@@ -45,11 +44,7 @@
             background: #000;
         }
 
-        .template-img {
-            height: 100%;
-            width: 100%;
-            object-fit: contain;
-        }
+        .template-img { height: 100%; width: 100%; object-fit: contain; }
 
         .interaction-layer {
             position: absolute;
@@ -59,7 +54,6 @@
             height: 100%;
         }
 
-        /* Bottom 15% - Action Area */
         .action-bar {
             width: 100%;
             height: 15%;
@@ -71,7 +65,6 @@
             border-top: 1px solid #333;
         }
 
-        /* UI Overlays */
         .photo-spot {
             position: absolute;
             cursor: pointer;
@@ -84,31 +77,19 @@
             border: 1px dashed rgba(255,255,255,0.5);
         }
         .photo-spot img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .photo-spot.filled { border: none; background: transparent; }
         .photo-spot.filled img { display: block; }
         .photo-spot span { color: #fff; font-size: 10px; text-align: center; pointer-events: none; }
 
-        .name-spot {
-            position: absolute;
-            z-index: 11;
-            display: flex;
-            justify-content: center;
-        }
+        .name-spot { position: absolute; z-index: 11; display: flex; justify-content: center; }
         .name-input {
             width: 90%;
             padding: 8px;
             text-align: center;
             border-radius: 4px;
             border: 1px solid #ccc;
-            font-size: 16px; /* Prevents iOS zoom on focus */
+            font-size: 16px; /* Fixes iOS zoom */
         }
-        .name-display {
-            display: none;
-            width: 100%;
-            text-align: center;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
+        .name-display { display: none; width: 100%; text-align: center; font-weight: bold; }
 
         .btn {
             padding: 12px 24px;
@@ -117,14 +98,10 @@
             color: white;
             font-weight: bold;
             font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
         .btn-whatsapp { background: var(--whatsapp-green); }
         .btn-download { background: #444; }
 
-        /* Cropper Modal */
         #cropModal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -132,7 +109,7 @@
             display: none; flex-direction: column;
         }
         .crop-area { flex: 1; position: relative; }
-        .crop-btns { height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; color: #fff; background: #111; font-weight: bold; }
+        .crop-btns { height: 70px; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; color: #fff; background: #111; }
     </style>
 </head>
 <body>
@@ -149,11 +126,7 @@
 </div>
 
 <script>
-    // Global User State
-    let userData = {
-        name: "",
-        photoBase64: ""
-    };
+    let userData = { name: "", photoBase64: "" };
 
     const templates = [
         { id: 'bhogi1', url: 'https://i.postimg.cc/7hJktRxn/Bhogi-01.jpg', photo: { bottom: '2%', left: '2%', w: '38%', h: '30%', circle: false }, name: { bottom: '5%', right: '5%', w: '50%', color: '#00334e', size: '20px' }},
@@ -167,130 +140,86 @@
 
     function initFeed() {
         const feed = document.getElementById('feed');
-        feed.innerHTML = ''; // Clear existing
         templates.forEach(t => {
             const card = document.createElement('div');
             card.className = 'card';
-            card.id = t.id;
             card.innerHTML = `
                 <div class="template-area" id="${t.id}-target">
                     <img src="${t.url}" class="template-img" crossorigin="anonymous">
                     <div class="interaction-layer">
-                        <div class="photo-spot" 
-                             style="bottom:${t.photo.bottom}; left:${t.photo.left}; width:${t.photo.w}; height:${t.photo.h}; border-radius:${t.photo.circle ? '50%' : '8px'}"
-                             onclick="triggerUpload()">
+                        <div class="photo-spot" style="bottom:${t.photo.bottom}; left:${t.photo.left}; width:${t.photo.w}; height:${t.photo.h}; border-radius:${t.photo.circle ? '50%' : '8px'}" onclick="triggerUpload()">
                             <span>Tap to Add<br>Photo</span>
-                            <img src="${userData.photoBase64}" style="${userData.photoBase64 ? 'display:block' : 'display:none'}">
+                            <img src="">
                         </div>
                         <div class="name-spot" style="bottom:${t.name.bottom}; left:${t.name.left || 'auto'}; right:${t.name.right || 'auto'}; width:${t.name.w}">
-                            <input type="text" class="name-input" placeholder="Enter Name" 
-                                   value="${userData.name}" 
-                                   oninput="syncName(this.value)" 
-                                   onblur="lockAllNames()"
-                                   style="${userData.name ? 'display:none' : 'display:block'}">
-                            <div class="name-display" style="color:${t.name.color}; font-size:${t.name.size}; ${userData.name ? 'display:block' : 'display:none'}">${userData.name}</div>
+                            <input type="text" class="name-input" placeholder="Enter Name" oninput="syncName(this.value)" onblur="lockAllNames()">
+                            <div class="name-display" style="color:${t.name.color}; font-size:${t.name.size}"></div>
                         </div>
                     </div>
                 </div>
                 <div class="action-bar">
                     <button class="btn btn-whatsapp" onclick="handleAction('${t.id}', 'share')">WhatsApp</button>
                     <button class="btn btn-download" onclick="handleAction('${t.id}', 'download')">Download</button>
-                </div>
-            `;
+                </div>`;
             feed.appendChild(card);
         });
     }
 
-    // --- Synchronization Core ---
     function syncName(val) {
         userData.name = val;
-        document.querySelectorAll('.name-input').forEach(input => {
-            if (input !== document.activeElement) input.value = val;
-        });
+        document.querySelectorAll('.name-input').forEach(input => { if (input !== document.activeElement) input.value = val; });
     }
 
     function lockAllNames() {
         if (!userData.name.trim()) return;
         document.querySelectorAll('.name-input').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.name-display').forEach(el => {
-            el.innerText = userData.name;
-            el.style.display = 'block';
-        });
+        document.querySelectorAll('.name-display').forEach(el => { el.innerText = userData.name; el.style.display = 'block'; });
     }
 
     function syncPhoto(base64) {
         userData.photoBase64 = base64;
         document.querySelectorAll('.photo-spot').forEach(spot => {
             const img = spot.querySelector('img');
-            img.src = base64;
-            img.style.display = 'block';
-            spot.classList.add('filled');
+            img.src = base64; img.style.display = 'block';
             spot.querySelector('span').style.display = 'none';
         });
     }
 
-    // --- Image Processing ---
     function triggerUpload() { document.getElementById('filePicker').click(); }
-
     document.getElementById('filePicker').onchange = function(e) {
-        if (e.target.files && e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const modal = document.getElementById('cropModal');
-                const img = document.getElementById('cropTarget');
-                img.src = event.target.result;
-                modal.style.display = 'flex';
-                if(cropper) cropper.destroy();
-                cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1, guides: false });
-            }
-            reader.readAsDataURL(e.target.files[0]);
-        }
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const modal = document.getElementById('cropModal');
+            const img = document.getElementById('cropTarget');
+            img.src = event.target.result;
+            modal.style.display = 'flex';
+            if(cropper) cropper.destroy();
+            cropper = new Cropper(img, { aspectRatio: 1, viewMode: 1 });
+        };
+        reader.readAsDataURL(e.target.files[0]);
     };
 
     function confirmCrop() {
-        const canvas = cropper.getCroppedCanvas({ width: 600, height: 600 });
-        syncPhoto(canvas.toDataURL('image/jpeg', 0.8));
+        syncPhoto(cropper.getCroppedCanvas({ width: 600 }).toDataURL('image/jpeg', 0.8));
         closeCrop();
     }
 
-    function closeCrop() {
-        document.getElementById('cropModal').style.display = 'none';
-        document.getElementById('filePicker').value = '';
-    }
+    function closeCrop() { document.getElementById('cropModal').style.display = 'none'; }
 
-    // --- Export ---
     async function handleAction(cardId, mode) {
-        const target = document.getElementById(`${cardId}-target`);
-        // Force hide inputs for clean capture
-        const canvas = await html2canvas(target, { useCORS: true, scale: 2, logging: false });
-        
+        const canvas = await html2canvas(document.getElementById(`${cardId}-target`), { useCORS: true, scale: 2 });
         if (mode === 'download') {
             const link = document.createElement('a');
-            link.download = `greeting-${cardId}.png`;
-            link.href = canvas.toDataURL("image/png");
-            link.click();
+            link.download = 'greeting.png'; link.href = canvas.toDataURL(); link.click();
         } else {
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], "status.png", { type: "image/png" });
-                if (navigator.share) {
-                    try {
-                        await navigator.share({ files: [file], title: 'Festival Greeting' });
-                    } catch (err) { console.log("Share failed", err); }
-                } else {
-                    alert("Sharing not supported. Please use Download.");
-                }
-            }, 'image/png');
+                if (navigator.share) await navigator.share({ files: [file] });
+            });
         }
     }
 
-    // Wait for libraries to load before initializing
-    window.onload = () => {
-        if (typeof Cropper !== 'undefined' && typeof html2canvas !== 'undefined') {
-            initFeed();
-        } else {
-            alert("Internet required for first load to fetch design tools.");
-        }
-    };
+    window.onload = initFeed;
 </script>
 </body>
 </html>
